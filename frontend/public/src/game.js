@@ -1,102 +1,71 @@
-if (!window.canvas) {
-    window.canvas = document.getElementById('gameCanvas');
-}
+import { socket } from './network.js';
 
-// Declare keys and mouse in the global scope
-window.keys = { w: false, a: false, s: false, d: false, space: false }; // Add 'space' key
+// Initialize global state
+window.keys = { w: false, a: false, s: false, d: false };
 window.mouse = null;
-let canShoot = true; // Cooldown flag
-const SHOOT_COOLDOWN = 200; // 200ms cooldown
-
-// Store local player state
+let canShoot = true;
+const SHOOT_COOLDOWN = 200;
 let localPlayer = null;
 
-// Handle keyboard input
+// Canvas setup
+const canvas = document.getElementById('gameCanvas');
+if (!canvas) throw new Error('Canvas element not found');
+
+// Shooting handling
+canvas.addEventListener('mousedown', (e) => {
+    if (canShoot && !document.getElementById('gameOver').classList.contains('visible')) {
+        handleShooting(e);
+        canShoot = false;
+        setTimeout(() => canShoot = true, SHOOT_COOLDOWN);
+    }
+});
+
+function handleShooting(event) {
+    if (!localPlayer) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / 1024;
+    const scaleY = canvas.height / 576;
+
+    const mouseX = (event.clientX - rect.left) / scaleX;
+    const mouseY = (event.clientY - rect.top) / scaleY;
+
+    const angle = Math.atan2(mouseY - localPlayer.y, mouseX - localPlayer.x);
+    socket.emit('shoot', { angle });
+}
+
+// Keyboard input
 window.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
-    if (keys.hasOwnProperty(key)) {
-        keys[key] = true;
-    }
-
-    // Trigger shooting when Spacebar is pressed
-    if (key === ' ') {
-        keys.space = true;
-        handleShooting();
-    }
+    if (key in window.keys) window.keys[key] = true;
 });
 
 window.addEventListener('keyup', (e) => {
     const key = e.key.toLowerCase();
-    if (keys.hasOwnProperty(key)) {
-        keys[key] = false;
-    }
-
-    // Reset Spacebar state
-    if (key === ' ') {
-        keys.space = false;
-    }
+    if (key in window.keys) window.keys[key] = false;
 });
 
-// Handle mouse input
-canvas.addEventListener('mousedown', (e) => {
-    handleShooting(e);
-});
-
-canvas.addEventListener('mouseup', () => {
-    mouse = null;
-});
-
-// Function to handle shooting logic
-function handleShooting(event = null) {
-    if (canShoot) {
-        let mouseX, mouseY;
-
-        if (event) {
-            // Mouse-based shooting
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-
-            // Normalize mouse coordinates to game world size (1024x576)
-            mouseX = ((event.clientX - rect.left) * scaleX / canvas.width) * 1024;
-            mouseY = ((event.clientY - rect.top) * scaleY / canvas.height) * 576;
-        } else {
-            // Spacebar-based shooting (use player's current position and direction)
-            if (!localPlayer) return;
-
-            const angle = localPlayer.direction || 0; // Default to 0 (rightward direction)
-            const distance = 500; // Arbitrary distance for shooting forward
-            mouseX = localPlayer.x + Math.cos(angle) * distance;
-            mouseY = localPlayer.y + Math.sin(angle) * distance;
-        }
-
-        // Set mouse coordinates for shooting
-        mouse = { x: mouseX, y: mouseY };
-
-        console.log("Shooting at:", mouse); // Debugging line
-
-        canShoot = false;
-        setTimeout(() => {
-            canShoot = true;
-        }, SHOOT_COOLDOWN);
-    }
-}
-
-// Set username
-function setUsername() {
-    const username = document.getElementById('usernameInput').value;
-    if (username) {
-        socket.emit('setUsername', username);
-        document.getElementById('usernameForm').classList.add('hidden');
-    }
-}
-
-// Listen for updates from the server
+// Game state updates
 socket.on('update', (state) => {
-    // Update local player state
-    if (state.players && state.players[socket.id]) {
-        localPlayer = state.players[socket.id];
-    }
+    localPlayer = state.players[socket.id];
+});
 
-    render(state); // Render the game state
+// Restart functionality
+document.getElementById('restartButton').addEventListener('click', () => {
+    window.keys = { w: false, a: false, s: false, d: false };
+
+    // Hide Game Over UI
+    const gameOverElement = document.getElementById('gameOver');
+    const backdropElement = document.getElementById('gameOverBackdrop');
+
+    gameOverElement.classList.remove('visible');
+    gameOverElement.style.display = 'none';
+    backdropElement.classList.remove('visible');
+    backdropElement.style.display = 'none';
+
+    // Reset local player
+    localPlayer = null;
+
+    // Emit respawn event
+    socket.emit('respawnPlayer');
 });

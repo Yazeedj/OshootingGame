@@ -1,25 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IO Shooter</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!-- Login Modal -->
+<div id="loginModal" class="login-modal">
+    <div class="login-box">
+        <h2>Enter Battle Arena</h2>
+        <div class="input-group">
+            <input type="text" id="usernameInput" placeholder="Commander Name" autofocus>
+            <button id="launchButton">Launch!</button>
+        </div>
+        <p id="errorMessage" class="hidden">Enter a username or name first!</p>
+    </div>
+</div>
+
+<!-- Game Canvas -->
 <canvas id="gameCanvas"></canvas>
+
+<!-- HUD (Heads-Up Display) -->
 <div id="hud">
     <div id="score">Score: 0</div>
     <div id="gameOver" class="hidden">
-        <h2>Game Over!</h2>
-        <button onclick="window.location.reload()">Play Again</button>
-    </div>
-    <div id="usernameForm">
-        <input type="text" id="usernameInput" placeholder="Enter username">
-        <button onclick="setUsername()">Join Game</button>
+        <h2>💀 Game Over!</h2>
+        <p>Your Score: <span id="finalScore">0</span></p>
+        <button id="restartButton">Play Again</button>
     </div>
 </div>
-<script src="/socket.io/socket.io.js"></script>
-<script src="src/game.js"></script>
-<script src="src/render.js"></script>
-<script src="src/network.js"></script>
+
+<!-- Leaderboard -->
+<div id="leaderboard">
+    <h3>🏆 Leaderboard</h3>
+    <ul id="scores"></ul>
+</div>
+
+<!-- Game Over Backdrop -->
+<div id="gameOverBackdrop" class="hidden"></div>
+
+<!-- Scripts -->
+<script type="module">
+    import { io } from 'https://cdn.socket.io/4.5.4/socket.io.esm.min.js';
+    window.io = io;
+</script>
+<script type="module" src="/src/network.js"></script>
+<script type="module" src="/src/game.js"></script>
+<script type="module" src="/src/render.js"></script>
 </body>
 </html>

@@ -1,3 +1,5 @@
+import { socket } from './network.js';
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -6,15 +8,24 @@ function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
-
 window.addEventListener('resize', resize);
 resize();
 
-// Rendering function
-function render(state) {
+export function render(state) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw grid
+    // Update HUD
+    const localPlayer = state.players[socket.id];
+    document.getElementById('score').textContent = `Score: ${localPlayer?.score || 0}`;
+
+    // Draw game elements
+    drawGrid();
+    drawPlayers(state.players);
+    drawProjectiles(state.projectiles);
+    updateLeaderboard(state.players);
+}
+
+function drawGrid() {
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 1;
     for (let x = 0; x < canvas.width; x += 50) {
@@ -29,29 +40,47 @@ function render(state) {
         ctx.lineTo(canvas.width, y);
         ctx.stroke();
     }
+}
 
-    // Scale factors for rendering
-    const scaleX = canvas.width / 1024; // Scale factor for X
-    const scaleY = canvas.height / 576; // Scale factor for Y
+function drawPlayers(players) {
+    const scaleX = canvas.width / 1024;
+    const scaleY = canvas.height / 576;
 
-    // Draw players
-    Object.values(state.players).forEach((player) => {
+    Object.values(players).forEach(player => {
         ctx.fillStyle = player.color;
         ctx.beginPath();
         ctx.arc(player.x * scaleX, player.y * scaleY, 20, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw username
+        // Username text
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
         ctx.fillText(player.username, player.x * scaleX, player.y * scaleY - 25);
     });
+}
 
-    // Draw projectiles
+function drawProjectiles(projectiles) {
+    const scaleX = canvas.width / 1024;
+    const scaleY = canvas.height / 576;
+
     ctx.fillStyle = 'red';
-    state.projectiles.forEach((p) => {
+    projectiles.forEach(projectile => {
         ctx.beginPath();
-        ctx.arc(p.x * scaleX, p.y * scaleY, 5, 0, Math.PI * 2);
+        ctx.arc(projectile.x * scaleX, projectile.y * scaleY, 5, 0, Math.PI * 2);
         ctx.fill();
     });
+}
+
+function updateLeaderboard(players) {
+    const leaderboard = document.getElementById('scores');
+    leaderboard.innerHTML = '';
+
+    Object.values(players)
+        .sort((a, b) => b.score - a.score)
+        .forEach(player => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${player.username}</span><span>${player.score}</span>`;
+            if (player.id === socket.id) li.classList.add('highlight');
+            leaderboard.appendChild(li);
+        });
 }

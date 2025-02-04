@@ -1,20 +1,53 @@
-const socket = io();
+import { io } from "https://cdn.socket.io/4.5.4/socket.io.esm.min.js";
+import { render } from "./render.js";
 
-// Listen for updates from the server
-socket.on('update', (state) => {
-    render(state); // Ensure render is defined
+const socket = io(); // Initialize socket connection
+export { socket };
+
+// Login handling
+document.getElementById('launchButton').addEventListener('click', setUsername);
+document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') setUsername();
 });
 
-// Handle game over event
-socket.on('gameOver', () => {
-    document.getElementById('gameOver').classList.remove('hidden');
-    document.getElementById('score').textContent = `Final Score: ${state.score || 0}`;
+function setUsername() {
+    const username = document.getElementById('usernameInput').value.trim();
+    if (!username) {
+        document.getElementById('errorMessage').classList.remove('hidden');
+        return;
+    }
+
+    document.getElementById('loginModal').style.display = 'none';
+    ['gameCanvas', 'leaderboard', 'hud'].forEach(id => {
+        document.getElementById(id).style.display = 'block';
+    });
+
+    socket.emit('setUsername', username);
+}
+
+// Game state updates
+socket.on('update', (state) => render(state));
+
+// Game Over handling
+socket.on('gameOver', (finalScore) => {
+    const gameOver = document.getElementById('gameOver');
+    const backdrop = document.getElementById('gameOverBackdrop');
+
+    if (gameOver && backdrop) {
+        document.getElementById('finalScore').textContent = finalScore;
+        gameOver.style.display = 'block';
+        backdrop.style.display = 'block';
+        gameOver.classList.add('visible');
+        backdrop.classList.add('visible');
+    }
 });
 
-// Send input 60 times per second
+// Input handling
 setInterval(() => {
     if (socket.connected) {
-        console.log("Sending input:", { keys: window.keys, mouse: window.mouse }); // Debugging line
-        socket.emit('input', { keys: window.keys, mouse: window.mouse }); // Use global keys and mouse
+        socket.emit('input', {
+            keys: window.keys,
+            mouse: window.mouse
+        });
     }
 }, 1000 / 60);

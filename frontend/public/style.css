@@ -1,28 +1,249 @@
+
+/* General Styles */
 body {
     margin: 0;
     overflow: hidden;
     background: #1a1a1a;
+    font-family: Arial, sans-serif;
+    color: white;
 }
 
+/* Login Modal */
+.login-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 4, 40, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.login-box {
+    background: linear-gradient(145deg, #001529, #002766);
+    padding: 2rem;
+    border-radius: 15px;
+    width: 350px;
+    box-shadow: 0 0 30px rgba(0, 191, 255, 0.3);
+    border: 1px solid #1890ff;
+    text-align: center;
+}
+
+.login-box h2 {
+    color: #40a9ff;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#gameOver.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Game Over Backdrop */
+#gameOverBackdrop {
+
+    position: fixed;
+    display: none !important;
+
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000; /* Below game over screen */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+#gameOverBackdrop.visible {
+    display: none !important;
+    opacity: 1;
+    pointer-events: all;
+}
+#usernameInput {
+    padding: 12px 20px;
+    border: 2px solid #1890ff;
+    border-radius: 25px;
+    background: rgba(0, 21, 41, 0.8);
+    color: #fff;
+    font-size: 1.1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+#usernameInput:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
+}
+
+#launchButton {
+    padding: 12px 0;
+    border: none;
+    border-radius: 25px;
+    background: #1890ff;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#launchButton:hover {
+    background: #40a9ff;
+    transform: scale(1.05);
+}
+
+#errorMessage {
+    color: #ff5555;
+    font-weight: bold;
+    margin-top: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px;
+    border-radius: 5px;
+    animation: fadeInOut 3s ease;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Game Canvas */
 #gameCanvas {
+    display: none;
     background: #2a2a2a;
 }
 
+/* HUD (Heads-Up Display) */
 #hud {
+    display: none;
     position: fixed;
     top: 20px;
     left: 20px;
     color: white;
-    font-family: Arial;
 }
 
+#score {
+    font-size: 1.2rem;
+}
+
+/* Game Over Screen */
 #gameOver {
-    background: rgba(0,0,0,0.8);
-    padding: 20px;
-    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    padding: 2rem;
     border-radius: 10px;
+    text-align: center;
+    z-index: 1001;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+#gameOver h2 {
+    color: #FF5252;
+    font-size: 2rem;
+    margin-bottom: 1rem;
 }
 
+#finalScore {
+    color: #4CAF50;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+#restartButton {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    background: #4CAF50;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#restartButton:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
+
+/* Game Over Backdrop */
+#gameOverBackdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    display: none;
+}
+
+/* Leaderboard */
+#leaderboard {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 1rem;
+    border-radius: 10px;
+    width: 200px;
+}
+
+#leaderboard h3 {
+    color: #4CAF50;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+#scores {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#scores li {
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    transition: background 0.3s ease;
+}
+
+#scores li:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#scores li.highlight {
+    background: rgba(76, 175, 80, 0.2);
+    font-weight: bold;
+}
+
+/* Utility Classes */
 .hidden {
     display: none;
+}
+
+.visible {
+    display: block;
 }
