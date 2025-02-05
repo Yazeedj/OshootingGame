@@ -1,15 +1,13 @@
 {
-    "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-    "headers": [
+    "routes": [
       {
-        "source": "/(.*).js",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/javascript"
-          }
-        ]
+        "src": "/src/(.*)\\.js",
+        "dest": "/src/$1.js",
+        "headers": { "Content-Type": "application/javascript" }
       }
+    ],
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/index.html" }
     ]
   }
   
