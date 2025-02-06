@@ -1,7 +1,7 @@
 import { io } from "https://cdn.socket.io/4.5.4/socket.io.esm.min.js";
 import { render } from "./render.js";
 
-const socket = io(); // Initialize socket connection
+const socket = io("https://oshootinggame-1.onrender.com"); // Updated to use Render server
 export { socket };
 
 // Login handling
