@@ -1,29 +1,25 @@
-const express = require('express');
-const socketio = require('socket.io');
-const path = require('path');
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const cors = require("cors");
+const path = require("path");
 
 const app = express();
-const deletionTimeouts = {}; // Track player deletion timeouts
+const server = http.createServer(app);
+
+// Enable CORS
+app.use(cors({
+    origin: "https://oshootinggame.netlify.app", // Allow Netlify frontend
+    methods: ["GET", "POST"]
+}));
 
 app.use(express.static(path.join(__dirname, '../frontend/public')));
-
-// CORS middleware
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
-
-const server = app.listen(3000, () => {
-    console.log('Server running on http://localhost:3000');
-});
-
-const io = socketio(server);
 
 // Game state
 const players = {};
 const projectiles = {};
 let projectileId = 0;
+const deletionTimeouts = {};
 
 // Constants
 const PLAYER_RADIUS = 20;
@@ -31,7 +27,15 @@ const PROJECTILE_RADIUS = 5;
 const PROJECTILE_SPEED = 10;
 const SHOOT_COOLDOWN = 200;
 
-io.on('connection', (socket) => {
+// Initialize Socket.io with CORS config
+const io = new Server(server, {
+    cors: {
+        origin: "https://oshootinggame.netlify.app",
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on("connection", (socket) => {
     console.log(`Player connected: ${socket.id}`);
 
     // Initialize player
@@ -196,3 +200,9 @@ setInterval(() => {
         projectiles: Object.values(projectiles)
     });
 }, 1000 / 60);
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
