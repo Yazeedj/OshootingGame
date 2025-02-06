@@ -1,14 +1,7 @@
 {
-    "routes": [
-      {
-        "src": "/src/(.*)\\.js",
-        "dest": "/src/$1.js",
-        "headers": { "Content-Type": "application/javascript" }
-      }
-    ],
     "rewrites": [
       {
-        "source": "/((?!src/.*\\.(js|css)$).*)",
+        "source": "/((?!src/|style\\.css).*)",
         "destination": "/index.html"
       }
     ]
